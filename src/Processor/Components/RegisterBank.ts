@@ -8,7 +8,7 @@ class RegistersBank {
     5: 0, 
     6: 0, 
     7: 0, 
-    8: 0, 
+    8: 100, 
     9: 0, 
     10: 0, 
     11: 0, 
@@ -42,8 +42,15 @@ class RegistersBank {
   }
 
   write(writeRegister: number, value: number) {
-    if(this.writeEnable)
+    if(this.writeEnable) {
+      console.log(writeRegister, value)
       this.registers[writeRegister] = value
+    }
+
+  }
+
+  display() {
+    return Object.entries(this.registers).map(([address, value]) => ({address, value}))
   }
 }
 

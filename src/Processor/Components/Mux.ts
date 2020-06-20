@@ -8,6 +8,10 @@ class Mux {
   get(position: number) {
     return this.inputs()[position] || 0
   }
+
+  display() {
+    return this.inputs()
+  }
 }
 
 export default Mux

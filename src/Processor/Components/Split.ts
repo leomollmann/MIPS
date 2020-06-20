@@ -8,12 +8,12 @@ class Split{
     range: [number, number]
   ) {
     this.value = value
-    this.left = 31 - range[0]
+    this.left = range[0] - range[1] + 1
     this.rigth = range[1]
   }
 
   get() {
-    return (this.value() >> this.rigth) << this.left
+    return ((1 << this.left) - 1) & (this.value() >> this.rigth)
   }
 }
 

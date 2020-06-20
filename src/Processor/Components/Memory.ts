@@ -21,6 +21,10 @@ class Memory {
 
   setReadEnable(enable: boolean) { this.readEnable = enable } 
   setWriteEnable(enable: boolean) { this.writeEnable = enable }
+
+  display() {
+    return Object.entries(this.memory).map(([address, value]) => ({address, value}))
+  }
 }
 
 export default Memory

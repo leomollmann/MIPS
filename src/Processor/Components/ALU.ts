@@ -17,6 +17,13 @@ class ALU {
   read() {
     return this.result
   }
+
+  display() {
+    return {
+      result: this.result,
+      zero: this.zero()
+    }
+  }
 }
 
 export default ALU
