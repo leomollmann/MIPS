@@ -68,53 +68,64 @@ export function setup(){
 
   // Execução a cada ciclo de clock, primeiro ocorre todas as leituras, depois as escritas
   function tick() {
-    const signals = controlUnit.step(opcode.get())
-
-    registerBank.setWriteEnable(!!signals.RegisterBankWrite)
-    registerBank.write(
-      writeRegister.get(signals.WriteRegister),
-      writeData.get(signals.MemoryToRegister)
-    )
+    // Começo do clock
+    const signals = controlUnit.step(opcode.get()) // Armazena os sinais vindo da máquina de estados
 
     memory.setReadEnable(!!signals.ReadMemory)
     const data = memory.read(
       addressSource.get(signals.PCOrALU)
-    )
+    ) // Lê a memória na posição definida pelo multiplexador 
     instructionRegister.setWriteEnable(!!signals.IRWrite)
-    instructionRegister.write(data)
-    dataRegister.write(data)
+    instructionRegister.write(data) // Armazena a instrução, fica disponível para os próximos ciclos
+    dataRegister.write(data) // Armazena o valor que retorna da memória, utilizado em LW e SW
   
-    A.write(
-      registerBank.read(
-        rs.get()
+    A.write( // Escreve no registrador A
+      registerBank.read( // a leitura do banco de registradores na posição 
+        rs.get() // range responsável pelo source
       )
-    )
-    B.write(
-      registerBank.read(
-        rt.get()
+    ) 
+    B.write( // Escreve no registrador B
+      registerBank.read( // a leitura do banco de registradores na posição 
+        rt.get() // range responsável pelo target
       )
     )
 
     memory.setWriteEnable(!!signals.WriteMemory)
-    memory.write(
-      pcAddress.get(signals.PCSource),
-      B.read()
+    memory.write( // Escreve na memória
+      pcAddress.get(signals.PCSource), // no endereço provido pelo multiplexador
+      B.read() // o conteúdo do registrador B
     )
   
-    alu.calculate(
+    alu.calculate( // Executa a operação
       signals.ALUOP, 
-      aluSourceA.get(signals.ALUSourceA), 
-      aluSourceB.get(signals.ALUSourceB)
+      aluSourceA.get(signals.ALUSourceA), // com o valor provido pelo multiplexador SourceA
+      aluSourceB.get(signals.ALUSourceB) // e pelo multiplexador SourceB
     )
-    aluOut.write(
+    aluOut.write( // Escreve o resultado da ULA no registrador de saída da ULA
       alu.read()
     )
-    
+
     PC.setWriteEnable(!!signals.PCWrite || (!!signals.PCConditionalWrite && !!alu.zero()))
-    PC.write(
-      pcAddress.get(signals.PCSource)
+    PC.write( // Escreve o valor do PC
+      pcAddress.get(signals.PCSource) // provido pelo multiplexador pcAddress
     )
 
+    registerBank.setWriteEnable(!!signals.RegisterBankWrite)
+    registerBank.write( // Escreve no banco de registradores
+      writeRegister.get(signals.WriteRegister), // o endereço provido pelo multiplexador writeRegister
+      writeData.get(signals.MemoryToRegister) // o valor provido pelo multiplexador writeData
+    )
+    
+    // Termina o clock, avisando aos registradores sobre a falling edge
+    PC.tick()
+    instructionRegister.tick()
+    dataRegister.tick()
+    A.tick()
+    B.tick()
+    aluOut.tick()
+    registerBank.tick()
+
+    // retorna os valores dos barramentos e memórias
     return {
       signals,
       PC: PC.read(),

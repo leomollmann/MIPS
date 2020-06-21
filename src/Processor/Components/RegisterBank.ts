@@ -1,5 +1,5 @@
 class RegistersBank {
-  private registers: Record<number, number> = {
+  private risingEdgeValue: Record<number, number> = {
     0: 0,
     1: 0,
     2: 0, 
@@ -33,24 +33,27 @@ class RegistersBank {
     30: 0, 
     31: 0
   }
+  private fallingEdgeValue = this.risingEdgeValue
   private writeEnable: boolean = false
   
   setWriteEnable(enable: boolean) { this.writeEnable = enable }
 
   read(register: number) {
-    return this.registers[register] || 0
+    return this.risingEdgeValue[register] || 0
   }
 
   write(writeRegister: number, value: number) {
     if(this.writeEnable) {
-      console.log(writeRegister, value)
-      this.registers[writeRegister] = value
+      this.fallingEdgeValue[writeRegister] = value
     }
+  }
 
+  tick() {
+    this.risingEdgeValue = this.fallingEdgeValue
   }
 
   display() {
-    return Object.entries(this.registers).map(([address, value]) => ({address, value}))
+    return Object.entries(this.risingEdgeValue).map(([address, value]) => ({address, value}))
   }
 }
 
