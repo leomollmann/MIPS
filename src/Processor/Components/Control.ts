@@ -14,14 +14,26 @@ type Signals = {
   PCSource: number
 }
 
+export const ALUOPs = {
+  ADDU: 0,
+  SUB: 1,
+  FUNCT: 2,
+  LUI: 3,
+  ORI: 4
+}
+
 const opcodes = {
   LW: 35,
-  SW: 43
+  SW: 43,
+  R: 0,
+  LUI: 15,
+  ORI: 13
 }
 
 class ControlUnit {
   public step: (opcode: number) => Signals = this.fetchStep
 
+  // Etapa de busca
   private fetchStep(opcode: number) {
     this.step = this.decodeStep
     return this.complete({
@@ -32,11 +44,24 @@ class ControlUnit {
     })
   }
 
+  // Etapa de decodificação
   private decodeStep(opcode: number) {
     switch(opcode){
+      case opcodes.R: {
+        this.step = this.typeRExecution
+        break
+      }
       case opcodes.SW:
       case opcodes.LW: {
         this.step = this.addressCalculationStep
+        break
+      }
+      case opcodes.LUI: {
+        this.step = this.loadUpperImmediate
+        break
+      }
+      case opcodes.ORI: {
+        this.step = this.ORImmediate
         break
       }
       default: this.step = this.fetchStep
@@ -46,6 +71,52 @@ class ControlUnit {
     })
   }
 
+  // Tipo I
+  private typeIWrite(opcode: number) {
+    this.step = this.fetchStep
+    return this.complete({
+      RegisterBankWrite: 1
+    })
+  }
+
+  // LUI
+  private loadUpperImmediate(opcode: number) {
+    this.step = this.typeIWrite
+    return this.complete({
+      ALUOP: ALUOPs.LUI,
+      ALUSourceA: 2,
+      ALUSourceB: 2
+    })
+  }
+
+  // ORI
+  private ORImmediate(opcode: number) {
+    this.step = this.typeIWrite
+    return this.complete({
+      ALUOP: ALUOPs.ORI,
+      ALUSourceA: 1,
+      ALUSourceB: 2
+    })
+  }
+
+  // Tipo R
+  private typeRExecution(opcode: number) {
+    this.step = this.typeRWrite
+    return this.complete({
+      ALUOP: ALUOPs.FUNCT,
+      ALUSourceA: 1
+    })
+  }
+
+  private typeRWrite(opcode: number) {
+    this.step = this.fetchStep
+    return this.complete({
+      WriteRegister: 1,
+      RegisterBankWrite: 1
+    })
+  }
+
+  // Load word & Store word
   private addressCalculationStep(opcode: number) {
     switch(opcode){
       case opcodes.SW: {
@@ -64,6 +135,7 @@ class ControlUnit {
     })
   }
 
+  // Load word
   private loadMemoryStep(opcode: number) {
     switch(opcode){
       case opcodes.LW: {
@@ -86,6 +158,7 @@ class ControlUnit {
     })
   }
 
+  // Store word
   private storeMemoryStep(opcode: number) {
     this.step = this.fetchStep
     return this.complete({
@@ -107,7 +180,7 @@ class ControlUnit {
       RegisterBankWrite: some.RegisterBankWrite || 0,
       ALUSourceA: some.ALUSourceA || 0,
       ALUSourceB: some.ALUSourceB || 0,
-      ALUOP: some.ALUOP || 0,
+      ALUOP: some.ALUOP || ALUOPs.ADDU,
       PCSource: some.PCSource || 0
     }
   }

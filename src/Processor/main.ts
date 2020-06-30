@@ -5,10 +5,19 @@ import Mux from "./Components/Mux";
 import ALU from "./Components/ALU";
 import Split from "./Components/Split";
 import ControlUnit from "./Components/Control";
+import ALUControl from "./Components/ALUControl";
 
 const data = [
-  {address: 0x400000, value: 0xac080064},
-  {address: 0x400004, value: 0x8c090064}
+  {address: 0x400000, value: 0x3c011001},
+  {address: 0x400004, value: 0x34240000},
+  {address: 0x400008, value: 0x3c011001},
+  {address: 0x40000C, value: 0x34250004},
+  {address: 0x400010, value: 0x8c880000},
+  {address: 0x400014, value: 0x8ca90000},
+  {address: 0x400018, value: 0x012a4821},
+  {address: 0x40001C, value: 0xaca10000},
+  {address: 0x10010000, value: 0x00000028},
+  {address: 0x10010004, value: 0x00000032}
 ]
 
 export function setup(){
@@ -39,14 +48,16 @@ export function setup(){
   // --- Etapa de execução ---
   const aluSourceA = new Mux(() => ({ // Multiplexador do fonte A da ULA
     0: PC.read(),
-    1: A.read()
+    1: A.read(),
+    2: 16
   })) 
   const aluSourceB = new Mux(() => ({ // Multiplexador do fonte B da ULA
     0: B.read(),
     1: 4,
     2: immediate.get(),
-    3: immediate.get() << 2,
+    3: immediate.get() << 2
   }))
+  const aluCtrl = new ALUControl() // Circuito combinacional de controle da ULA
   const alu = new ALU() // ULA
 
   // Etapa de escrita
@@ -96,8 +107,8 @@ export function setup(){
       B.read() // o conteúdo do registrador B
     )
   
+    alu.setControl(aluCtrl.compute(signals.ALUOP, funct.get())) // Calcula o controle da ULA
     alu.calculate( // Executa a operação
-      signals.ALUOP, 
       aluSourceA.get(signals.ALUSourceA), // com o valor provido pelo multiplexador SourceA
       aluSourceB.get(signals.ALUSourceB) // e pelo multiplexador SourceB
     )
@@ -154,14 +165,8 @@ export function setup(){
   }
 
   console.log(tick())
-  console.log(tick())
-  console.log(tick())
-  console.log(tick())
-  console.log(tick())
-  console.log(tick())
-  console.log(tick())
-  console.log(tick())
-  console.log(tick())
-  console.log(tick())
+  while (instructionRegister.read() !== 0) console.log(tick())
+
+  return tick
 }
 
