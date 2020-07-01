@@ -1,10 +1,10 @@
 .text
 .globl main
 main: 
-addiu $t0, $0, 100
-addiu $t1, $0, 101
-xor $t2, $t1, $t0
-andi $t3, $t2, 1
-ori $t4, $t2, 1
-and $t5, $t3, $t4
+ori $s0, 100
+ori $s1, 101
+ori $s2, 1
+xor $t0, $s0, $s1
+andi $t1, $s2, 1
+and $t2, $t0, $t1
 end: j end
