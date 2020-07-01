@@ -147,6 +147,7 @@ export function setup(data: Data[]){
       rt: rt.get(),
       rd: rd.get(),
       immediate: immediate.get(),
+      negativeImmediate: negativeImmediate.get(),
       funct: funct.get(),
       shamt: shiftAmount.get(),
       registerBank: registerBank.display(),
@@ -163,6 +164,51 @@ export function setup(data: Data[]){
     }
   }
 
-  return tick
+  return { 
+    tick,
+    initialValues: {
+      signals:{
+        stage: "Início",
+        PCConditionalWrite: 0,
+        PCWrite: 0,
+        PCOrALU: 0,
+        ReadMemory: 0,
+        WriteMemory: 0,
+        MemoryToRegister: 0,
+        IRWrite: 0,
+        WriteRegister: 0,
+        RegisterBankWrite: 0,
+        ALUSourceA: 0,
+        ALUSourceB: 0,
+        ALUOP: 0,
+        PCSource: 0,
+        shiftSource: 0
+      },
+      PC: PC.read(),
+      addressSource: addressSource.display(),
+      memory: memory.display(),
+      instructionRegister: instructionRegister.read(),
+      dataRegister: dataRegister.read(),
+      opcode: opcode.get(),
+      rs: rs.get(),
+      rt: rt.get(),
+      rd: rd.get(),
+      immediate: immediate.get(),
+      negativeImmediate: negativeImmediate.get(),
+      funct: funct.get(),
+      shamt: shiftAmount.get(),
+      registerBank: registerBank.display(),
+      A: A.read(),
+      B: B.read(),
+      aluSourceA: aluSourceA.display(),
+      aluSourceB: aluSourceB.display(),
+      alu: alu.display(),
+      jump: jump.get(),
+      aluOut: aluOut.read(),
+      pcAddress: pcAddress.display(),
+      writeRegister: writeRegister.display(),
+      writeData: writeData.display()
+    }
+  }
 }
 

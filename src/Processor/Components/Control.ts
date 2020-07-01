@@ -1,4 +1,5 @@
 type Signals = {
+  stage: string
   PCConditionalWrite: number
   PCWrite: number
   PCOrALU: number
@@ -44,6 +45,7 @@ class ControlUnit {
   private fetchStep(opcode: number) {
     this.step = this.decodeStep
     return this.complete({
+      stage: "Busca",
       PCWrite: 1,
       ReadMemory: 1,
       IRWrite: 1,
@@ -90,6 +92,7 @@ class ControlUnit {
       default: this.step = this.fetchStep
     }
     return this.complete({
+      stage: "Decodificação",
       ALUSourceB: 3
     })
   }
@@ -98,6 +101,7 @@ class ControlUnit {
   private branchEqual(opcode: number) {
     this.step = this.fetchStep
     return this.complete({
+      stage: "Branch Equal",
       ALUSourceA: 1,
       ALUOP: ALUOPs.SUB,
       PCConditionalWrite: 1,
@@ -109,6 +113,7 @@ class ControlUnit {
   private branchNotEqual(opcode: number) {
     this.step = this.fetchStep
     return this.complete({
+      stage: "Branch Not Equal",
       ALUSourceA: 1,
       ALUOP: ALUOPs.DIFF,
       PCConditionalWrite: 1,
@@ -120,6 +125,7 @@ class ControlUnit {
   private typeIWrite(opcode: number) {
     this.step = this.fetchStep
     return this.complete({
+      stage: "Escrita do Tipo I",
       RegisterBankWrite: 1
     })
   }
@@ -128,6 +134,7 @@ class ControlUnit {
   private loadUpperImmediate(opcode: number) {
     this.step = this.typeIWrite
     return this.complete({
+      stage: "Load Upper Immediate",
       ALUOP: ALUOPs.LUI,
       ALUSourceB: 2,
       shiftSource: 1
@@ -138,6 +145,7 @@ class ControlUnit {
   private ORImmediate(opcode: number) {
     this.step = this.typeIWrite
     return this.complete({
+      stage: "OR Immediate",
       ALUOP: ALUOPs.ORI,
       ALUSourceA: 1,
       ALUSourceB: 2
@@ -148,6 +156,7 @@ class ControlUnit {
   private ANDImmediate(opcode: number) {
     this.step = this.typeIWrite
     return this.complete({
+      stage: "AND Immediate",
       ALUOP: ALUOPs.AND,
       ALUSourceA: 1,
       ALUSourceB: 2
@@ -158,6 +167,7 @@ class ControlUnit {
   private ADDUImmediate(opcode: number) {
     this.step = this.typeIWrite
     return this.complete({
+      stage: "ADDIU Immediate",
       ALUOP: ALUOPs.ADDU,
       ALUSourceA: 1,
       ALUSourceB: 2
@@ -168,6 +178,7 @@ class ControlUnit {
   private typeRExecution(opcode: number) {
     this.step = this.typeRWrite
     return this.complete({
+      stage: "Execução do Tipo R",
       ALUOP: ALUOPs.FUNCT,
       ALUSourceA: 1
     })
@@ -176,6 +187,7 @@ class ControlUnit {
   private typeRWrite(opcode: number) {
     this.step = this.fetchStep
     return this.complete({
+      stage: "Escrita do Tipo R",
       WriteRegister: 1,
       RegisterBankWrite: 1
     })
@@ -195,6 +207,7 @@ class ControlUnit {
       default: this.step = this.fetchStep
     }
     return this.complete({
+      stage: "Cálculo do Endereço de Acesso a Memória",
       ALUSourceA: 1,
       ALUSourceB: 2
     })
@@ -210,6 +223,7 @@ class ControlUnit {
       default: this.step = this.fetchStep
     }
     return this.complete({
+      stage: "Carrega Memória",
       PCOrALU: 1,
       ReadMemory: 1
     })
@@ -218,6 +232,7 @@ class ControlUnit {
   private writeTargetStep(opcode: number) {
     this.step = this.fetchStep
     return this.complete({
+      stage: "Escreve Conteúdo",
       RegisterBankWrite: 1,
       MemoryToRegister: 1
     })
@@ -227,6 +242,7 @@ class ControlUnit {
   private storeMemoryStep(opcode: number) {
     this.step = this.fetchStep
     return this.complete({
+      stage: "Grava Memória",
       PCOrALU: 1,
       WriteMemory: 1
     })
@@ -234,6 +250,7 @@ class ControlUnit {
 
   private complete(some: Partial<Signals>): Signals {
     return {
+      stage: some.stage || "Error",
       PCConditionalWrite: some.PCConditionalWrite || 0,
       PCWrite: some.PCWrite || 0,
       PCOrALU: some.PCOrALU || 0,
