@@ -18,6 +18,7 @@ function Simulator({ data }: Props) {
 
   return (
     <div className="container">
+      <div className="next-btn" onClick={next}>Next</div>
       <div className="memory">
         {values?.memory.map(({address, value}) => (
           <div className="dataset" key={address}>
@@ -26,7 +27,6 @@ function Simulator({ data }: Props) {
           </div>
         ))}
       </div>
-      <div onClick={next}>Next</div>
     </div>
   )
 }

@@ -66,6 +66,12 @@ label {
   border-radius: 10px;
 }
 
+.next-btn {
+  padding: 2rem;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
 input {
   display: none;
 }

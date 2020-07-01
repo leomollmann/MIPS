@@ -1,11 +1,10 @@
 .text
 .globl main
 main:
-addiu $t0, $0, 100
+addiu $t0, $0, 130
 addiu $t1, $0, 130
 loop:
+beq $t1, $t0, end
 addiu $t0, $t0, 10
-slt $t2, $t0, $t1
-bne $t2, $0, loop
-sll $1, $1, -19
+j loop
 end: j end

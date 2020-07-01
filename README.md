@@ -10,4 +10,6 @@ Este projeto foi feito com as tecnologias web `React` e `Typescript`.
 
 #### Como rodar? ####
 
-A versão de build (transpilada e standalone) se econtra na pasta /build, basta abrir o arquivo `index.html`
+1. Precisa do Node.js instalado na máquina (se usar linux: https://nodejs.org/en/download/package-manager/)
+2. Rode o comando `npm i -g serve`
+3. Rode o comando `serve build`
