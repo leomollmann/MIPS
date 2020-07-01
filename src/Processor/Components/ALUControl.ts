@@ -12,6 +12,7 @@ class ALUControl {
   compute(aluOp: number, funct: number) {
     switch (aluOp) {
       case ALUOPs.ADDU: return operations.ADDU
+      case ALUOPs.AND: return operations.AND
       case ALUOPs.SUB: return operations.SUB
       case ALUOPs.LUI: return operations.SLL
       case ALUOPs.ORI: return operations.OR

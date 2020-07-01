@@ -6,26 +6,17 @@ import ALU from "./Components/ALU";
 import Split from "./Components/Split";
 import ControlUnit from "./Components/Control";
 import ALUControl from "./Components/ALUControl";
+import Data from "./Entities/Data";
 
-const data = [
-  {address: 0x400000, value: 0x3c011001},
-  {address: 0x400004, value: 0x34240000},
-  {address: 0x400008, value: 0x3c011001},
-  {address: 0x40000C, value: 0x34250004},
-  {address: 0x400010, value: 0x8c880000},
-  {address: 0x400014, value: 0x8ca90000},
-  {address: 0x400018, value: 0x012a4821},
-  {address: 0x40001C, value: 0xaca10000},
-  {address: 0x10010000, value: 0x00000028},
-  {address: 0x10010004, value: 0x00000032}
-]
+export const PCStart = 0x400000
+export const DataStart = 0x10010000
 
-export function setup(){
+export function setup(data: Data[]){
   // Instanciamento de componentes
   // --- Unidade de controle ---
   const controlUnit = new ControlUnit()
   // --- Etapa de acesso ---
-  const PC = new Register(false, 0x400000) // PC, Registrador comum, iniciado com escrita desabilitada e valor em 0x400000
+  const PC = new Register(false, PCStart) // PC, Registrador comum, iniciado com escrita desabilitada e valor em 0x400000
   const addressSource = new Mux(() => ({ // Multiplexador de endereço de acesso a memória
     0: PC.read(),
     1: aluOut.read()
@@ -49,13 +40,14 @@ export function setup(){
   const aluSourceA = new Mux(() => ({ // Multiplexador do fonte A da ULA
     0: PC.read(),
     1: A.read(),
-    2: 16
+    2: immediate.get()
   })) 
   const aluSourceB = new Mux(() => ({ // Multiplexador do fonte B da ULA
     0: B.read(),
     1: 4,
     2: immediate.get(),
-    3: immediate.get() << 2
+    3: immediate.get() << 2,
+    4: 16
   }))
   const aluCtrl = new ALUControl() // Circuito combinacional de controle da ULA
   const alu = new ALU() // ULA
@@ -163,9 +155,6 @@ export function setup(){
       writeData: writeData.display()
     }
   }
-
-  console.log(tick())
-  while (instructionRegister.read() !== 0) console.log(tick())
 
   return tick
 }

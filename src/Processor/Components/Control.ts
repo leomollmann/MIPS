@@ -19,7 +19,8 @@ export const ALUOPs = {
   SUB: 1,
   FUNCT: 2,
   LUI: 3,
-  ORI: 4
+  ORI: 4,
+  AND: 5
 }
 
 const opcodes = {
@@ -27,7 +28,9 @@ const opcodes = {
   SW: 43,
   R: 0,
   LUI: 15,
-  ORI: 13
+  ORI: 13,
+  ADDIU: 9,
+  ANDI: 12
 }
 
 class ControlUnit {
@@ -64,6 +67,14 @@ class ControlUnit {
         this.step = this.ORImmediate
         break
       }
+      case opcodes.ANDI: {
+        this.step = this.ANDImmediate
+        break
+      }
+      case opcodes.ADDIU: {
+        this.step = this.ADDUImmediate
+        break
+      }
       default: this.step = this.fetchStep
     }
     return this.complete({
@@ -85,7 +96,7 @@ class ControlUnit {
     return this.complete({
       ALUOP: ALUOPs.LUI,
       ALUSourceA: 2,
-      ALUSourceB: 2
+      ALUSourceB: 4
     })
   }
 
@@ -94,6 +105,26 @@ class ControlUnit {
     this.step = this.typeIWrite
     return this.complete({
       ALUOP: ALUOPs.ORI,
+      ALUSourceA: 1,
+      ALUSourceB: 2
+    })
+  }
+
+  // ANDI
+  private ANDImmediate(opcode: number) {
+    this.step = this.typeIWrite
+    return this.complete({
+      ALUOP: ALUOPs.AND,
+      ALUSourceA: 1,
+      ALUSourceB: 2
+    })
+  }
+  
+  // ADDIU
+  private ADDUImmediate(opcode: number) {
+    this.step = this.typeIWrite
+    return this.complete({
+      ALUOP: ALUOPs.ADDU,
       ALUSourceA: 1,
       ALUSourceB: 2
     })

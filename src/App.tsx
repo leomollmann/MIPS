@@ -1,12 +1,34 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './App.css'
 import FileInput from 'Web/FileInput'
-import { setup } from 'Processor/main'
+import Simulator from 'Web/Simulator'
+import Data from 'Processor/Entities/Data'
 
 function App() {
-	setup()
+	const [uploading, setUploading] = useState(true)
+	const [instructionsData, setInstructionsData] = useState<Data[]>()
+	const [memoryData, setMemoryData] = useState<Data[]>()
 
-	return <FileInput onFile={console.log} />
+	if(!uploading) return <Simulator data={instructionsData!.concat(memoryData || [])} />
+
+	return (
+		<>
+			<FileInput
+				instructionsData={instructionsData}
+				memoryData={memoryData}
+				setInstructionsData={setInstructionsData} 
+				setMemoryData={setMemoryData} 
+			/>
+			{instructionsData && (
+				<div
+					className="procede"
+					onClick={() => setUploading(false)}
+				>
+					Ir para o simulador
+				</div>
+			)}
+		</>
+	)
 }
 
 export default App
