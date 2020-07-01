@@ -6,7 +6,8 @@ export const operations = {
   SLL: 4,
   SRL: 5,
   SUB: 6,
-  SLT: 7
+  SLT: 7,
+  DIFF: 8
 }
 
 class ALU {
@@ -17,11 +18,17 @@ class ALU {
     [operations.XOR]: (a, b) => a ^ b,
     [operations.SUB]: (a, b) => a - b,
     [operations.SLT]: (a, b) => a < b ? 1 : 0,
-    [operations.SLL]: (a, b) => a << b,
-    [operations.SRL]: (a, b) => a >> b
+    [operations.SLL]: (_, b) => b << this.shamt,
+    [operations.SRL]: (_, b) => b >> this.shamt,
+    [operations.DIFF]: (a, b) => +(a === b)
   }
   private operation: number = 0
   private result: number = 0
+  private shamt: number = 0
+
+  setShiftAmount(amount: number) {
+    this.shamt = amount
+  }
 
   setControl(operation: number) {
     this.operation = operation
@@ -43,7 +50,8 @@ class ALU {
     return {
       result: this.result,
       zero: this.zero(),
-      operation: this.operation
+      operation: this.operation,
+      shamt: this.shamt
     }
   }
 }

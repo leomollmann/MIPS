@@ -7,6 +7,7 @@ import Split from "./Components/Split";
 import ControlUnit from "./Components/Control";
 import ALUControl from "./Components/ALUControl";
 import Data from "./Entities/Data";
+import Negative from "./Components/Negative";
 
 export const PCStart = 0x400000
 export const DataStart = 0x10010000
@@ -31,7 +32,9 @@ export function setup(data: Data[]){
   const rt = new Split(() => instructionRegister.read(), [20, 16]) // Saída do registrador de instruções limitada ao trecho de target register 20 - 16
   const rd = new Split(() => instructionRegister.read(), [15, 11]) // Saída do registrador de instruções limitada ao trecho de source register 15 - 11
   const immediate = new Split(() => instructionRegister.read(), [15, 0]) // Saída do registrador de instruções limitada ao trecho do imediato register 15 - 0
+  const negativeImmediate = new Negative(() => immediate.get(), 16)
   const funct = new Split(() => instructionRegister.read(), [5, 0]) // Saída do registrador de instruções limitada ao trecho de função 5 - 0
+  const shiftAmount = new Split(() => instructionRegister.read(), [10, 6]) // Saída do registrador de instruções limitada ao trecho de shift amount 10 - 6
   const registerBank = new RegistersBank() // Banco de registradores
   const A = new Register() // Registrador auxiliar A
   const B = new Register() // Registrador auxiliar B
@@ -40,14 +43,16 @@ export function setup(data: Data[]){
   const aluSourceA = new Mux(() => ({ // Multiplexador do fonte A da ULA
     0: PC.read(),
     1: A.read(),
-    2: immediate.get()
   })) 
   const aluSourceB = new Mux(() => ({ // Multiplexador do fonte B da ULA
     0: B.read(),
     1: 4,
-    2: immediate.get(),
-    3: immediate.get() << 2,
-    4: 16
+    2: negativeImmediate.get(),
+    3: negativeImmediate.get() << 2,
+  }))
+  const shiftSource = new Mux(() => ({
+    0: shiftAmount.get(),
+    1: 16
   }))
   const aluCtrl = new ALUControl() // Circuito combinacional de controle da ULA
   const alu = new ALU() // ULA
@@ -99,7 +104,8 @@ export function setup(data: Data[]){
       B.read() // o conteúdo do registrador B
     )
   
-    alu.setControl(aluCtrl.compute(signals.ALUOP, funct.get())) // Calcula o controle da ULA
+    alu.setControl(aluCtrl.get(signals.ALUOP, funct.get())) // Calcula o controle da ULA
+    alu.setShiftAmount(shiftSource.get(signals.shiftSource)) // Provê o campo de shift amount
     alu.calculate( // Executa a operação
       aluSourceA.get(signals.ALUSourceA), // com o valor provido pelo multiplexador SourceA
       aluSourceB.get(signals.ALUSourceB) // e pelo multiplexador SourceB
@@ -142,6 +148,7 @@ export function setup(data: Data[]){
       rd: rd.get(),
       immediate: immediate.get(),
       funct: funct.get(),
+      shamt: shiftAmount.get(),
       registerBank: registerBank.display(),
       A: A.read(),
       B: B.read(),

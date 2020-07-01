@@ -12,6 +12,7 @@ type Signals = {
   ALUSourceB: number
   ALUOP: number
   PCSource: number
+  shiftSource: number
 }
 
 export const ALUOPs = {
@@ -20,7 +21,8 @@ export const ALUOPs = {
   FUNCT: 2,
   LUI: 3,
   ORI: 4,
-  AND: 5
+  AND: 5,
+  DIFF: 6
 }
 
 const opcodes = {
@@ -30,7 +32,9 @@ const opcodes = {
   LUI: 15,
   ORI: 13,
   ADDIU: 9,
-  ANDI: 12
+  ANDI: 12,
+  BNE: 5,
+  BEQ: 4
 }
 
 class ControlUnit {
@@ -75,10 +79,40 @@ class ControlUnit {
         this.step = this.ADDUImmediate
         break
       }
+      case opcodes.BEQ: {
+        this.step = this.branchEqual
+        break
+      }
+      case opcodes.BNE: {
+        this.step = this.branchNotEqual
+        break
+      }
       default: this.step = this.fetchStep
     }
     return this.complete({
       ALUSourceB: 3
+    })
+  }
+
+  // BEQ
+  private branchEqual(opcode: number) {
+    this.step = this.fetchStep
+    return this.complete({
+      ALUSourceA: 1,
+      ALUOP: ALUOPs.SUB,
+      PCConditionalWrite: 1,
+      PCSource: 1
+    })
+  }
+
+  // BNE
+  private branchNotEqual(opcode: number) {
+    this.step = this.fetchStep
+    return this.complete({
+      ALUSourceA: 1,
+      ALUOP: ALUOPs.DIFF,
+      PCConditionalWrite: 1,
+      PCSource: 1
     })
   }
 
@@ -95,8 +129,8 @@ class ControlUnit {
     this.step = this.typeIWrite
     return this.complete({
       ALUOP: ALUOPs.LUI,
-      ALUSourceA: 2,
-      ALUSourceB: 4
+      ALUSourceB: 2,
+      shiftSource: 1
     })
   }
 
@@ -212,7 +246,8 @@ class ControlUnit {
       ALUSourceA: some.ALUSourceA || 0,
       ALUSourceB: some.ALUSourceB || 0,
       ALUOP: some.ALUOP || ALUOPs.ADDU,
-      PCSource: some.PCSource || 0
+      PCSource: some.PCSource || 0,
+      shiftSource: some.shiftSource || 0
     }
   }
 }
